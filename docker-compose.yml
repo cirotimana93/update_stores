@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  update-stores:
+    build: .
+    container_name: update-stores
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=America/Lima
+    # volumes:
+    #   - ./logs:/app/logs
