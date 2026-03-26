@@ -6,7 +6,7 @@ services:
     container_name: update-stores
     restart: always
     ports:
-      - "8000:8000"
+      - "8003:8000"
     environment:
       - TZ=America/Lima
     # volumes:
