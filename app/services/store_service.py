@@ -112,4 +112,4 @@ class StoreSyncService:
                 f"===================================="
             )
             print(msg)
-            logger.info(msg.replace('\n', '  ////  '))
+            logger.info(msg)

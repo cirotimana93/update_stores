@@ -1,4 +1,6 @@
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,6 +9,17 @@ class HttpClient:
     def __init__(self, headers: dict):
         self.session = requests.Session()
         self.session.headers.update(headers)
+        
+        # Configurar reintentos automaticos
+        retry_strategy = Retry(
+            total=3,  # Numero maximo de reintentos
+            status_forcelist=[429, 500, 502, 503, 504],  # Codigos HTTP donde se reintentara
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],  # Permitir reintentos tambien en POST
+            backoff_factor=2  # Tiempo de espera (2s, 4s, 8s)
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
         
     def post(self, url: str, data: dict = None, allow_redirects: bool = False):
         try:
