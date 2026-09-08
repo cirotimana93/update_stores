@@ -5,7 +5,7 @@ from app.services.store_service import StoreSyncService
 
 logger = logging.getLogger(__name__)
 
-@repeat_at(cron="5 * * * *")
+@repeat_at(cron="0 5 * * *")
 async def processing_data_with_cron_updated_kashio():
     logger.info("-----------------------------------------------------------------")
     logger.info("iniciando el proceso programado (fastapi_utilities event) de extraccion del reporte a las 6:00 am.")
