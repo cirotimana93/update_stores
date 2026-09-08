@@ -79,9 +79,11 @@ class ReportService:
             # crear copia para evitar warnings al modificar datos
             reduced_df = df[final_columns].copy()
             
-            # excluir la fila de "suma total"
+            # excluir la fila de "suma total" y tiendas de prueba de capacitacion
             if "Local" in reduced_df.columns:
                 reduced_df = reduced_df[~reduced_df["Local"].astype(str).str.contains("Suma Total", na=False, case=False)]
+                # devct: se excluye tienda de prueba de capacitacion
+                reduced_df = reduced_df[~reduced_df["Local"].astype(str).str.strip().str.lower().str.contains("capacitaci", na=False)]
             
             # formatear "centro de costo" eliminando el ".0" tratandolo como string o string vacio
             if "Centro de Costo" in reduced_df.columns:

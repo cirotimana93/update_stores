@@ -16,6 +16,10 @@ class StoreSyncService:
         for row in report_data:
             ceco = str(row.get("Centro de Costo", "")).strip()
             local_name = str(row.get("Local", "")).strip()
+            cleanName = local_name.strip().lower()
+            # devct: se omite tienda de prueba de capacitacion
+            if "capacitaci" in cleanName:
+                continue
             if ceco:
                 excel_dict[ceco] = local_name
 
@@ -51,6 +55,9 @@ class StoreSyncService:
                     # existio en consulta activa (escenario 1)
                     store = db_active_dict[excel_ceco]
                     store.name = excel_local
+                    if store.status != 1:
+                        store.status = 1
+                        logger.info(f"tienda cambiada a status 1 - ceco: {store.ceco} | nombre: {store.name}")
                     store.updated_at = current_time
                     store.delete_at = None
                     stats_updated_active += 1
@@ -64,6 +71,7 @@ class StoreSyncService:
                         store.delete_at = None
                         store.updated_at = current_time
                         stats_inserted_or_restored += 1
+                        logger.info(f"tienda restaurada con status 1 - ceco: {store.ceco} | nombre: {store.name}")
                     else:
                         # no existe para nada en bd, insertamos
                         supervisor_val = json.dumps({
@@ -75,7 +83,7 @@ class StoreSyncService:
                             "connection_user": "o1subz1fg"
                         }, ensure_ascii=False)
                         
-                        new_store = TblStore(
+                        newStore = TblStore(
                             name=excel_local,
                             ceco=excel_ceco,
                             supervisor=supervisor_val,
@@ -85,16 +93,18 @@ class StoreSyncService:
                             updated_at=current_time,
                             delete_at=None
                         )
-                        db.add(new_store)
+                        db.add(newStore)
                         stats_inserted_or_restored += 1
+                        logger.info(f"tienda nueva insertada con status 1 - ceco: {newStore.ceco} | nombre: {newStore.name}")
 
             # --- escenario 3 ---
-            # todos los activos en bd que no llegaron en el json
+            # devct: se registra en logs cada tienda que no llego en el reporte y cambia a status 2
             for db_ceco, store in db_active_dict.items():
                 if db_ceco not in excel_dict:
                     store.status = 2
                     store.updated_at = current_time
                     stats_status_2 += 1
+                    logger.info(f"tienda cambiada a status 2 - ceco: {store.ceco} | nombre: {store.name}")
 
             try:
                 db.commit()
